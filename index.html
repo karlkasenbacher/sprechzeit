@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Sprechzeit-Tracker</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        #input-section {
+            margin-bottom: 20px;
+        }
+        #buttons-section {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        button, input[type="text"] {
+            padding: 10px;
+            margin: 5px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            background-color: #007BFF;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        input[type="text"] {
+            background-color: white;
+            color: black;
+        }
+        .name-button {
+            background-color: #007BFF;
+        }
+        .silence-button {
+            background-color: #FF4500;
+        }
+        .end-button {
+            background-color: #32CD32;
+        }
+        #results-section {
+            margin-top: 20px;
+            width: 100%;
+            max-width: 600px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Sprechzeit-Tracker</h1>
+    <div id="input-section">
+        <input type="text" id="name-input" placeholder="Name eingeben">
+        <button onclick="addName()">Name hinzufügen</button>
+    </div>
+    <div id="buttons-section">
+        <button class="silence-button" onclick="startTimer('Stille')">Stille</button>
+        <button class="end-button" onclick="endSession()">Beenden</button>
+    </div>
+    <div id="current-speaking-time">Aktuelle Sprechzeit: 0.00 Minuten</div>
+    <div id="results-section"></div>
+
+    <script>
+        let timers = { 'Stille': 0 };
+        let counts = { 'Stille': 0 };
+        let currentTimer = null;
+        let startTime = null;
+        let updateInterval = null;
+
+        function addName() {
+            const nameInput = document.getElementById('name-input');
+            const name = nameInput.value.trim();
+            if (name && !timers.hasOwnProperty(name)) {
+                timers[name] = 0;
+                counts[name] = 0;
+                const button = document.createElement('button');
+                button.innerText = name;
+                button.className = 'name-button';
+                button.onclick = () => startTimer(name);
+                document.getElementById('buttons-section').insertBefore(button, document.querySelector('.end-button'));
+                nameInput.value = '';
+                positionButtons();
+            }
+        }
+
+        function startTimer(name) {
+            if (currentTimer) {
+                timers[currentTimer] += (Date.now() - startTime) / 60000;
+            }
+
+            if (currentTimer !== name) {
+                counts[name]++;
+            }
+
+            currentTimer = name;
+            startTime = Date.now();
+            clearInterval(updateInterval);
+            updateInterval = setInterval(updateCurrentSpeakingTime, 1000);
+        }
+
+        function updateCurrentSpeakingTime() {
+            const currentSpeakingTime = (Date.now() - startTime) / 60000;
+            document.getElementById('current-speaking-time').innerText = 'Aktuelle Sprechzeit: ' + currentSpeakingTime.toFixed(2) + ' Minuten';
+        }
+
+        function endSession() {
+            if (currentTimer) {
+                timers[currentTimer] += (Date.now() - startTime) / 60000;
+                clearInterval(updateInterval);
+            }
+            displayResults();
+            currentTimer = null;
+        }
+
+        function displayResults() {
+            const resultsSection = document.getElementById('results-section');
+            resultsSection.innerHTML = '<h2>Ergebnisse</h2>';
+            for (const [name, time] of Object.entries(timers)) {
+                const result = document.createElement('p');
+                result.innerText = `${name}: ${time.toFixed(2)} Minuten, Wortmeldungen: ${counts[name]}`;
+                resultsSection.appendChild(result);
+            }
+        }
+
+        function positionButtons() {
+            const buttons = document.querySelectorAll('.name-button');
+            const count = buttons.length;
+            const baseRadius = 100; // Base radius
+            const additionalSpacing = 20; // Additional spacing per button
+            const minRadius = 150; // Minimum radius to prevent overlap for small number of buttons
+            const radius = Math.max(baseRadius + (count * additionalSpacing), minRadius); // Calculate radius dynamically with a minimum
+
+            buttons.forEach((button, index) => {
+                const angle = (index / count) * (2 * Math.PI);
+                const x = Math.cos(angle) * radius;
+                const y = Math.sin(angle) * radius;
+                button.style.position = 'absolute';
+                button.style.left = `50%`;
+                button.style.top = `50%`;
+                button.style.transform = `translate(${x}px, ${y}px)`;
+            });
+
+            // Adjust the size of the button container to fit the buttons
+            const buttonsSection = document.getElementById('buttons-section');
+            buttonsSection.style.width = `${radius * 2 + 100}px`; // +100 for padding
+            buttonsSection.style.height = `${radius * 2 + 100}px`; // +100 for padding
+        }
+    </script>
+</body>
+</html>
