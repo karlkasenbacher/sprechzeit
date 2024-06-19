@@ -19,8 +19,9 @@
         }
         #buttons-section {
             position: relative;
-            width: 300px;
-            height: 300px;
+            width: 100%; /* Adjusted for responsiveness */
+            max-width: 400px; /* Maximum width */
+            height: 400px; /* Fixed height */
             margin-bottom: 20px;
             display: flex;
             justify-content: center;
@@ -45,9 +46,17 @@
         }
         .silence-button {
             background-color: #FF4500;
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -100%); /* Adjusted to avoid overlap */
         }
         .end-button {
             background-color: #32CD32;
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, 0); /* Adjusted to avoid overlap */
         }
         #results-section {
             margin-top: 20px;
@@ -134,9 +143,9 @@
         function positionButtons() {
             const buttons = document.querySelectorAll('.name-button');
             const count = buttons.length;
-            const baseRadius = 100; // Base radius
-            const additionalSpacing = 20; // Additional spacing per button
-            const minRadius = 150; // Minimum radius to prevent overlap for small number of buttons
+            const baseRadius = 50; // Adjusted base radius
+            const additionalSpacing = 10; // Adjusted additional spacing per button
+            const minRadius = 80; // Minimum radius to prevent overlap for small number of buttons
             const radius = Math.max(baseRadius + (count * additionalSpacing), minRadius); // Calculate radius dynamically with a minimum
 
             buttons.forEach((button, index) => {
@@ -151,8 +160,8 @@
 
             // Adjust the size of the button container to fit the buttons
             const buttonsSection = document.getElementById('buttons-section');
-            buttonsSection.style.width = `${radius * 2 + 100}px`; // +100 for padding
-            buttonsSection.style.height = `${radius * 2 + 100}px`; // +100 for padding
+            buttonsSection.style.width = `${radius * 2 + 50}px`; // +50 for padding
+            buttonsSection.style.height = `${radius * 2 + 50}px`; // +50 for padding
         }
     </script>
 </body>
