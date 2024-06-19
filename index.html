@@ -1,168 +1,261 @@
 <!DOCTYPE html>
-<html lang="de">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>Sprechzeit-Tracker</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        #input-section {
-            margin-bottom: 20px;
-        }
-        #buttons-section {
-            position: relative;
-            width: 100%; /* Adjusted for responsiveness */
-            max-width: 400px; /* Maximum width */
-            height: 400px; /* Fixed height */
-            margin-bottom: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        button, input[type="text"] {
-            padding: 10px;
-            margin: 5px;
-            border-radius: 5px;
-            border: 1px solid #ccc;
-            background-color: #007BFF;
-            color: white;
-            font-size: 16px;
-            cursor: pointer;
-        }
-        input[type="text"] {
-            background-color: white;
-            color: black;
-        }
-        .name-button {
-            background-color: #007BFF;
-        }
-        .silence-button {
-            background-color: #FF4500;
-            position: absolute;
-            left: 50%;
-            top: 50%;
-            transform: translate(-50%, -100%); /* Adjusted to avoid overlap */
-        }
-        .end-button {
-            background-color: #32CD32;
-            position: absolute;
-            left: 50%;
-            top: 50%;
-            transform: translate(-50%, 0); /* Adjusted to avoid overlap */
-        }
-        #results-section {
-            margin-top: 20px;
-            width: 100%;
-            max-width: 600px;
-        }
-    </style>
+  <title>Sprechzeit-Tracker</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body {
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      background-color: #f7f7f7;
+      margin: 0;
+      padding: 20px;
+      color: #333;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    h1 {
+      color: #333;
+      text-align: center;
+      font-weight: 300;
+      margin-bottom: 30px;
+    }
+    .input-container {
+      display: flex;
+      margin-bottom: 30px;
+    }
+    .input-container input {
+      flex: 1;
+      padding: 10px;
+      font-size: 16px;
+      border: none;
+      border-radius: 4px 0 0 4px;
+      background-color: #fff;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      outline: none;
+    }
+    .input-container input:focus {
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    .input-container button {
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #333;
+      color: #fff;
+      border: none;
+      border-radius: 0 4px 4px 0;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    .input-container button:hover {
+      background-color: #555;
+    }
+    .icon-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-bottom: 30px;
+    }
+    .icon {
+      padding: 10px 20px;
+      margin: 5px;
+      background-color: #fff;
+      border-radius: 4px;
+      cursor: pointer;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      transition: background-color 0.3s;
+      font-size: 16px;
+      color: #333;
+    }
+    .icon:hover {
+      background-color: #f0f0f0;
+    }
+    .silence {
+      background-color: #ffc107;
+      color: #fff;
+    }
+    .end {
+      background-color: #dc3545;
+      color: #fff;
+    }
+    .current-speaker {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .current-speaker span {
+      font-weight: bold;
+    }
+    .result {
+      text-align: center;
+    }
+    .result h2 {
+      color: #333;
+      font-weight: 300;
+      margin-bottom: 20px;
+    }
+    .result p {
+      margin-bottom: 10px;
+    }
+    @media screen and (max-width: 600px) {
+      .input-container {
+        flex-direction: column;
+      }
+      .input-container input {
+        border-radius: 4px;
+        margin-bottom: 10px;
+      }
+      .input-container button {
+        border-radius: 4px;
+      }
+    }
+  </style>
 </head>
 <body>
+  <div class="container">
     <h1>Sprechzeit-Tracker</h1>
-    <div id="input-section">
-        <input type="text" id="name-input" placeholder="Name eingeben">
-        <button onclick="addName()">Name hinzufügen</button>
+    
+    <div class="input-container">
+      <input type="text" id="name-input" placeholder="Name eingeben">
+      <button onclick="addName()">Hinzufügen</button>
     </div>
-    <div id="buttons-section">
-        <button class="silence-button" onclick="startTimer('Stille')">Stille</button>
-        <button class="end-button" onclick="endSession()">Beenden</button>
+    
+    <div class="icon-container" id="icons"></div>
+    
+    <div class="current-speaker">
+      Aktueller Sprecher: <span id="current-speaker-name"></span><br>
+      Redezeit: <span id="current-speaker-time">0s</span>
     </div>
-    <div id="current-speaking-time">Aktuelle Sprechzeit: 0.00 Minuten</div>
-    <div id="results-section"></div>
-
-    <script>
-        let timers = { 'Stille': 0 };
-        let counts = { 'Stille': 0 };
-        let currentTimer = null;
-        let startTime = null;
-        let updateInterval = null;
-
-        function addName() {
-            const nameInput = document.getElementById('name-input');
-            const name = nameInput.value.trim();
-            if (name && !timers.hasOwnProperty(name)) {
-                timers[name] = 0;
-                counts[name] = 0;
-                const button = document.createElement('button');
-                button.innerText = name;
-                button.className = 'name-button';
-                button.onclick = () => startTimer(name);
-                document.getElementById('buttons-section').insertBefore(button, document.querySelector('.end-button'));
-                nameInput.value = '';
-                positionButtons();
-            }
-        }
-
-        function startTimer(name) {
-            if (currentTimer) {
-                timers[currentTimer] += (Date.now() - startTime) / 60000;
-            }
-
-            if (currentTimer !== name) {
-                counts[name]++;
-            }
-
-            currentTimer = name;
-            startTime = Date.now();
-            clearInterval(updateInterval);
-            updateInterval = setInterval(updateCurrentSpeakingTime, 1000);
-        }
-
-        function updateCurrentSpeakingTime() {
-            const currentSpeakingTime = (Date.now() - startTime) / 60000;
-            document.getElementById('current-speaking-time').innerText = 'Aktuelle Sprechzeit: ' + currentSpeakingTime.toFixed(2) + ' Minuten';
-        }
-
-        function endSession() {
-            if (currentTimer) {
-                timers[currentTimer] += (Date.now() - startTime) / 60000;
-                clearInterval(updateInterval);
-            }
-            displayResults();
-            currentTimer = null;
-        }
-
-        function displayResults() {
-            const resultsSection = document.getElementById('results-section');
-            resultsSection.innerHTML = '<h2>Ergebnisse</h2>';
-            for (const [name, time] of Object.entries(timers)) {
-                const result = document.createElement('p');
-                result.innerText = `${name}: ${time.toFixed(2)} Minuten, Wortmeldungen: ${counts[name]}`;
-                resultsSection.appendChild(result);
-            }
-        }
-
-        function positionButtons() {
-            const buttons = document.querySelectorAll('.name-button');
-            const count = buttons.length;
-            const baseRadius = 50; // Adjusted base radius
-            const additionalSpacing = 10; // Adjusted additional spacing per button
-            const minRadius = 80; // Minimum radius to prevent overlap for small number of buttons
-            const radius = Math.max(baseRadius + (count * additionalSpacing), minRadius); // Calculate radius dynamically with a minimum
-
-            buttons.forEach((button, index) => {
-                const angle = (index / count) * (2 * Math.PI);
-                const x = Math.cos(angle) * radius;
-                const y = Math.sin(angle) * radius;
-                button.style.position = 'absolute';
-                button.style.left = `50%`;
-                button.style.top = `50%`;
-                button.style.transform = `translate(${x}px, ${y}px)`;
-            });
-
-            // Adjust the size of the button container to fit the buttons
-            const buttonsSection = document.getElementById('buttons-section');
-            buttonsSection.style.width = `${radius * 2 + 50}px`; // +50 for padding
-            buttonsSection.style.height = `${radius * 2 + 50}px`; // +50 for padding
-        }
-    </script>
+    
+    <div class="result" id="result"></div>
+  </div>
+  
+  <script>
+    let names = [];
+    let timers = {};
+    let turns = {};
+    let currentTimer = null;
+    let timerInterval = null;
+    let isTrackingEnded = false;
+    
+    function addName() {
+      const nameInput = document.getElementById("name-input");
+      const name = nameInput.value.trim();
+      
+      if (name !== "") {
+        names.push(name);
+        nameInput.value = "";
+        displayIcons();
+      }
+    }
+    
+    function handleKeyPress(event) {
+      if (event.keyCode === 13) {
+        addName();
+      }
+    }
+    
+    function displayIcons() {
+      const iconsDiv = document.getElementById("icons");
+      iconsDiv.innerHTML = "";
+      
+      names.forEach(name => {
+        const icon = document.createElement("div");
+        icon.classList.add("icon");
+        icon.textContent = name;
+        icon.onclick = () => startTimer(name);
+        iconsDiv.appendChild(icon);
+        
+        timers[name] = 0;
+        turns[name] = 0;
+      });
+      
+      const silenceIcon = document.createElement("div");
+      silenceIcon.classList.add("icon", "silence");
+      silenceIcon.textContent = "Stille";
+      silenceIcon.onclick = () => startTimer("Stille");
+      iconsDiv.appendChild(silenceIcon);
+      timers["Stille"] = 0;
+      
+      const endIcon = document.createElement("div");
+      endIcon.classList.add("icon", "end");
+      endIcon.textContent = "Ende";
+      endIcon.onclick = endTracking;
+      iconsDiv.appendChild(endIcon);
+    }
+    
+    function startTimer(name) {
+      if (isTrackingEnded) {
+        names.forEach(name => {
+          timers[name] = 0;
+          turns[name] = 0;
+        });
+        timers["Stille"] = 0;
+        isTrackingEnded = false;
+      }
+      
+      if (currentTimer !== null) {
+        timers[currentTimer] += Date.now() - timers[currentTimer + "_start"];
+      }
+      
+      currentTimer = name;
+      timers[currentTimer + "_start"] = Date.now();
+      turns[currentTimer]++;
+      
+      updateCurrentSpeaker();
+    }
+    
+    function updateCurrentSpeaker() {
+      const currentSpeakerName = document.getElementById("current-speaker-name");
+      const currentSpeakerTime = document.getElementById("current-speaker-time");
+      
+      currentSpeakerName.textContent = currentTimer;
+      
+      clearInterval(timerInterval);
+      timerInterval = setInterval(() => {
+        const elapsedTime = Date.now() - timers[currentTimer + "_start"];
+        currentSpeakerTime.textContent = formatTime(elapsedTime);
+      }, 1000);
+    }
+    
+    function endTracking() {
+      if (currentTimer !== null) {
+        timers[currentTimer] += Date.now() - timers[currentTimer + "_start"];
+      }
+      
+      clearInterval(timerInterval);
+      displayResult();
+      
+      isTrackingEnded = true;
+      currentTimer = null;
+    }
+    
+    function displayResult() {
+      const resultDiv = document.getElementById("result");
+      resultDiv.innerHTML = "<h2>Sprechzeit-Ergebnisse</h2>";
+      
+      names.forEach(name => {
+        const time = formatTime(timers[name]);
+        const turnCount = turns[name];
+        resultDiv.innerHTML += `<p>${name}: ${time} (Wortmeldungen: ${turnCount})</p>`;
+      });
+      
+      const silenceTime = formatTime(timers["Stille"]);
+      resultDiv.innerHTML += `<p>Stille: ${silenceTime}</p>`;
+    }
+    
+    function formatTime(milliseconds) {
+      const seconds = Math.floor(milliseconds / 1000);
+      const minutes = Math.floor(seconds / 60);
+      const remainingSeconds = seconds % 60;
+      
+      return `${minutes}m ${remainingSeconds}s`;
+    }
+    
+    document.getElementById("name-input").addEventListener("keypress", handleKeyPress);
+    
+    // Initialisiere Timer für Stille
+    timers["Stille"] = 0;
+  </script>
 </body>
 </html>
