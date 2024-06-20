@@ -234,14 +234,16 @@
       const resultDiv = document.getElementById("result");
       resultDiv.innerHTML = "<h2>Sprechzeit-Ergebnisse</h2>";
       
-      names.forEach(name => {
+      const sortedNames = names.sort((a, b) => turns[b] - turns[a]);
+      
+      sortedNames.forEach(name => {
         const time = formatTime(timers[name]);
         const turnCount = turns[name];
-        resultDiv.innerHTML += `<p>${name}: ${time} (Wortmeldungen: ${turnCount})</p>`;
+        resultDiv.innerHTML += `<p>${name}: Wortmeldungen: ${turnCount} (${time})</p>`;
       });
       
       const silenceTime = formatTime(timers["Stille"]);
-      resultDiv.innerHTML += `<p>Stille: ${silenceTime}</p>`;
+      resultDiv.innerHTML += `<p>Stille: (${silenceTime})</p>`;
     }
     
     function formatTime(milliseconds) {
