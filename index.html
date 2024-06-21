@@ -176,6 +176,7 @@
       silenceIcon.onclick = () => startTimer("Stille");
       iconsDiv.appendChild(silenceIcon);
       timers["Stille"] = 0;
+      turns["Stille"] = 0;
       
       const endIcon = document.createElement("div");
       endIcon.classList.add("icon", "end");
@@ -191,6 +192,7 @@
           turns[name] = 0;
         });
         timers["Stille"] = 0;
+        turns["Stille"] = 0;
         isTrackingEnded = false;
       }
       
@@ -243,7 +245,8 @@
       });
       
       const silenceTime = formatTime(timers["Stille"]);
-      resultDiv.innerHTML += `<p>Stille: (${silenceTime})</p>`;
+      const silenceTurns = turns["Stille"];
+      resultDiv.innerHTML += `<p>Stille: Wortmeldungen: ${silenceTurns} (${silenceTime})</p>`;
     }
     
     function formatTime(milliseconds) {
@@ -256,8 +259,9 @@
     
     document.getElementById("name-input").addEventListener("keypress", handleKeyPress);
     
-    // Initialisiere Timer für Stille
+    // Initialisiere Timer und Turns für Stille
     timers["Stille"] = 0;
+    turns["Stille"] = 0;
   </script>
 </body>
 </html>
